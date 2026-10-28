@@ -3,5 +3,5 @@
 // N'y mets JAMAIS la clé "service_role" / "secret".
 window.SUPABASE = {
   url: 'https://TON-PROJET.supabase.co',
-  key: 'TA-CLE-PUBLIQUE'
+  key: sb_publishable_EQrxmpbqDEGpQnpwGYBkew_aeiK-Zd9
 };
