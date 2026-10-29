@@ -1,6 +1,6 @@
-const V = 'party-games-v3';
-const F = ['./', 'index.html', 'style.css', 'config.js', 'app.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
-self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(F))); self.skipWaiting(); });
+const V = 'party-games-v6';
+const F = ['./', 'index.html', 'style.css', 'icons.js', 'config.js', 'app.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
+self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => Promise.all(F.map(f => c.add(f).catch(() => {}))))); self.skipWaiting(); });
 self.addEventListener('activate', e => e.waitUntil(
   caches.keys().then(k => Promise.all(k.filter(x => x !== V).map(x => caches.delete(x)))).then(() => clients.claim())
 ));
