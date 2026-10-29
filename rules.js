@@ -19,7 +19,7 @@ window.RULES = {
   'Bombe': 'Touche ton écran pour passer la bombe. Elle bat de plus en plus vite. Celui qui la tient quand elle explose est éliminé. Le dernier en jeu gagne.',
   'Sprint': 'Tape le plus vite possible dans ta zone. Le premier à 40 touches gagne.',
   'Taupes': 'Touche la taupe quand elle apparaît dans ta zone. Le premier à 10 gagne.',
-  'Parcours': 'Tout le monde court sur le même parcours. Glisse ton doigt sur ta barre de couleur pour déplacer ton bonhomme et passe dans les trous des murs. Le dernier en vie gagne.',
+  'Tour': 'Chacun son tour, lâche ton bloc au bon moment pour le poser sur la tour. Si la tour, ou une partie, tombe, tu es éliminé. Le dernier en jeu gagne.',
   'Ballon': 'À ton tour, pompe le ballon (3 fois maximum) puis passe. Personne ne sait quand il éclate : celui qui le fait éclater est éliminé. Le dernier en jeu gagne.',
   'Feu rouge': 'Tape quand l’écran est vert, ne touche pas quand il est rouge, et n’anticipe pas. Une faute fait perdre un point. Premier à 5.',
   'Tournoi': 'Enchaîne 5 jeux tirés au hasard. Chaque manche gagnée rapporte 1 point. Celui qui a le plus de points gagne le tournoi.'

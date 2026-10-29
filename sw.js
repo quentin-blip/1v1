@@ -1,4 +1,4 @@
-const V = 'party-games-v11';
+const V = 'party-games-v12';
 const F = ['./', 'index.html', 'style.css', 'icons.js', 'rules.js', 'config.js', 'app.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => Promise.all(F.map(f => c.add(f).catch(() => {}))))); self.skipWaiting(); });
 self.addEventListener('activate', e => e.waitUntil(

@@ -21,7 +21,7 @@ window.LOGOS = {
   'Sprint': ['#43a047', '<path d="M14 10l14 14-14 14M28 10l14 14-14 14"/>', 'v'],
   'Taupes': ['#a1887f', '<ellipse cx="24" cy="36" rx="16" ry="6"/><path d="M14 36c0-12 4-20 10-20s10 8 10 20"/><circle cx="20" cy="26" r="1.8" fill="currentColor"/><circle cx="28" cy="26" r="1.8" fill="currentColor"/>', 'v'],
   '_gear': ['#ffffff', '<circle cx="24" cy="24" r="6"/><path d="M24 4v6M24 38v6M4 24h6M38 24h6M10 10l4 4M34 34l4 4M10 38l4-4M34 14l4-4"/>'],
-  'Parcours': ['#00acc1', '<path d="M6 12h14M28 12h14M6 24h6M20 24h22"/><circle cx="24" cy="38" r="4" fill="currentColor"/>', 'v'],
+  'Tour': ['#78909c', '<rect x="14" y="34" width="22" height="9" rx="2"/><rect x="10" y="23" width="20" height="9" rx="2"/><rect x="17" y="12" width="18" height="9" rx="2" fill="currentColor"/>', 'r'],
   'Ballon': ['#f06292', '<ellipse cx="24" cy="19" rx="12" ry="14"/><path d="M24 33v3M21 40l3-4 3 4M24 40c0 3-3 4-3 6"/>', 'r'],
   'Feu rouge': ['#66bb6a', '<rect x="14" y="4" width="20" height="40" rx="8"/><circle cx="24" cy="14" r="3.5" fill="currentColor"/><circle cx="24" cy="24" r="3.5"/><circle cx="24" cy="34" r="3.5"/>', 'v'],
   'Tournoi': ['#f5b301', '<path d="M14 8h20v12a10 10 0 0 1-20 0zM14 12H7c0 7 3 10 7 10M34 12h7c0 7-3 10-7 10M24 30v8M16 42h16"/>'],

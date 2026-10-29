@@ -458,36 +458,84 @@ const games = [
     });
     cleanup = () => ids.forEach(clearInterval);
   } },
-  { n: 'Parcours', p: 4, m: 1, run(el, end) {
-    const n = NP, W = 360, H = 520, R = 11, c = document.createElement('canvas'), pads = document.createElement('div');
-    c.width = W; c.height = H; c.className = 'course'; pads.className = 'pads'; el.append(c, pads);
-    const x = c.getContext('2d'), ink = getComputedStyle(document.body).color, cy = H - 50;
-    const px = Array.from({ length: n }, (_, i) => W * (i + 1) / (n + 1)), tg = px.slice(), alive = px.map(() => true), rows = [];
-    let gx = W / 2, last = performance.now(); const t0 = last; let raf, over = false;
-    const G = () => Math.max(78, 120 - (performance.now() - t0) / 1000 * 1.4);
-    names.slice(0, n).forEach((nm, i) => {
-      const p = document.createElement('div'); p.className = 'pad'; p.style.borderColor = C[i]; p.style.background = C[i] + '33'; p.textContent = nm; pads.append(p);
-      const mv = e => { const r = p.getBoundingClientRect(); tg[i] = R + Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * (W - 2 * R); };
-      p.onpointerdown = e => { p.setPointerCapture(e.pointerId); mv(e); };
-      p.onpointermove = e => { if (p.hasPointerCapture(e.pointerId)) mv(e); };
-    });
+  { n: 'Tour', p: 4, m: 1, run(el, end) {
+    const W = 360, H = 520, h = 26, G = .25, c = document.createElement('canvas'), btn = document.createElement('button');
+    c.width = W; c.height = H; c.className = 'course'; btn.className = 'big'; el.append(c, btn);
+    const x = c.getContext('2d'), ink = getComputedStyle(document.body).color, alive = names.slice(0, NP).map((_, i) => i);
+    let bl = [], t = alive[Math.random() * alive.length | 0], cur, fall = null, drop = null, st = 'hover', cam = 0, hx = W / 2, hd = 1, T = 0, loser = -1, tm, raf, last = performance.now();
+    const sy = y => H - 40 - y + cam;
+    const newBlock = () => { cur = { w: 56 + (Math.random() * 54 | 0) }; st = 'hover'; btn.disabled = false; btn.textContent = names[t] + ' : lâcher !'; btn.style.background = C[t]; btn.style.color = '#111'; };
+    const rect = (xc, yc, w, col) => { x.fillStyle = col; x.fillRect(xc - w / 2, yc - h / 2, w, h); x.strokeStyle = ink; x.globalAlpha = .45; x.lineWidth = 2; x.strokeRect(xc - w / 2, yc - h / 2, w, h); x.globalAlpha = 1; };
+    const box = (cx, cy, w, ang, col) => { x.save(); x.translate(cx, sy(cy)); x.rotate(ang); rect(0, 0, w, col); x.restore(); };
+    const span = k => ({ L: Math.max(bl[k].cx - bl[k].w / 2, bl[k - 1].cx - bl[k - 1].w / 2), R: Math.min(bl[k].cx + bl[k].w / 2, bl[k - 1].cx + bl[k - 1].w / 2) });
+    const com = k => { let M = 0, X = 0; for (let j = k; j < bl.length; j++) { M += bl[j].w; X += bl[j].w * bl[j].cx; } return X / M; };
+    const check = () => { for (let k = 1; k < bl.length; k++) { const { L, R } = span(k), cm = com(k); if (cm < L || cm > R) return { k, L, R, cm }; } return null; };
+    const margin = () => { let m = 99; for (let k = 1; k < bl.length; k++) { const { L, R } = span(k), cm = com(k); m = Math.min(m, cm - L, R - cm); } return m; };
+    const startFall = b => {
+      const s = b.cm > b.R ? 1 : -1, px = s > 0 ? b.R : b.L, py = b.k * h;
+      const grp = bl.slice(b.k).map(q => ({ ...q, rx: q.cx - px, ry: (q.lv + .5) * h - py }));
+      const M = grp.reduce((a, q) => a + q.w, 0), I = grp.reduce((a, q) => a + q.w * ((q.w * q.w + h * h) / 12 + q.rx * q.rx + q.ry * q.ry), 0);
+      fall = { grp, px, py, s, M, I, dx: Math.abs(b.cm - px), dy: grp.reduce((a, q) => a + q.w * q.ry, 0) / M, th: .02, om: 0, free: false, n: 0 };
+      bl.length = b.k; loser = t; st = 'fall'; btn.disabled = true; beep(100, .4, 'sawtooth', .3); buzz(150);
+    };
+    const finish = () => {
+      st = 'pause'; const k = alive.indexOf(loser); alive.splice(k, 1);
+      tm = setTimeout(() => { if (alive.length === 1) return end(alive[0]); bl = []; fall = null; cam = 0; t = alive[k % alive.length]; newBlock(); }, 1500);
+    };
+    btn.onclick = () => {
+      if (st !== 'hover') return;
+      const tp = bl[bl.length - 1], ov = !tp || Math.min(hx + cur.w / 2, tp.cx + tp.w / 2) - Math.max(hx - cur.w / 2, tp.cx - tp.w / 2) > 2;
+      const hy = bl.length * h + 170;
+      if (!ov) { fall = { free: true, n: 0, parts: [{ cx: hx, cy: hy, w: cur.w, ang: 0, vx: 0, vy: 0, om: (Math.random() - .5) * .1, col: C[t] }] }; loser = t; st = 'fall'; btn.disabled = true; beep(100, .4, 'sawtooth', .3); buzz(150); return; }
+      drop = { y: hy, vy: 0, cx: hx, w: cur.w }; st = 'drop'; btn.disabled = true;
+    };
     const loop = now => {
-      const dt = Math.min(3, (now - last) / 16.67); last = now; const sp = 2.6 + (now - t0) / 1000 * .06, before = alive.filter(Boolean).length;
-      if (!rows.length || rows[rows.length - 1].y > 150 - Math.min(40, (now - t0) / 1000)) {
-        const g = G(); gx = Math.max(g / 2 + 10, Math.min(W - g / 2 - 10, gx + (Math.random() * 2 - 1) * 110)); rows.push({ y: -12, gx, g });
+      const dt = Math.min(2.5, (now - last) / 16.67); last = now; T += dt;
+      cam += (Math.max(0, bl.length * h - 230) - cam) * .08 * dt;
+      if (st === 'hover') { hx += hd * (2.2 + bl.length * .18) * dt; const m = cur.w / 2 + 6; if (hx > W - m) { hx = W - m; hd = -1; } if (hx < m) { hx = m; hd = 1; } }
+      if (st === 'drop') {
+        drop.vy += .6 * dt; drop.y -= drop.vy * dt;
+        if (drop.y - h / 2 <= bl.length * h) {
+          bl.push({ cx: drop.cx, w: drop.w, lv: bl.length, col: C[t] }); drop = null; beep(220, .08, 'square', .12); buzz(15);
+          const bad = check();
+          if (bad) startFall(bad); else { t = alive[(alive.indexOf(t) + 1) % alive.length]; newBlock(); }
+        }
       }
-      rows.forEach(r => r.y += sp * dt); while (rows.length && rows[0].y > H + 20) rows.shift();
-      px.forEach((_, i) => { if (alive[i]) px[i] += Math.max(-7 * dt, Math.min(7 * dt, tg[i] - px[i])); });
-      alive.forEach((a, i) => { if (a && rows.some(r => Math.abs(r.y - cy) < R + 8 && (px[i] - R * .7 < r.gx - r.g / 2 || px[i] + R * .7 > r.gx + r.g / 2))) alive[i] = false; });
-      if (alive.filter(Boolean).length < before) { beep(140, .25, 'sawtooth', .25); buzz(120); }
-      x.clearRect(0, 0, W, H); x.fillStyle = ink; x.globalAlpha = .85;
-      rows.forEach(r => { x.fillRect(0, r.y - 8, r.gx - r.g / 2, 16); x.fillRect(r.gx + r.g / 2, r.y - 8, W, 16); });
-      px.forEach((p, i) => { x.globalAlpha = alive[i] ? 1 : .25; x.fillStyle = C[i]; x.beginPath(); x.arc(p, cy - 6, 7, 0, 7); x.fill(); x.fillRect(p - 5, cy + 1, 10, 12); });
-      x.globalAlpha = 1;
-      if (alive.filter(Boolean).length <= 1 && !over) { over = true; const id = setTimeout(() => end(alive.indexOf(true)), 900); cleanup = () => { clearTimeout(id); cancelAnimationFrame(raf); }; }
+      if (fall) {
+        const f = fall;
+        if (!f.free) {
+          f.om += G * f.M * (f.dx * Math.cos(f.th) + f.dy * Math.sin(f.th)) / f.I * dt; f.th += f.om * dt;
+          if (f.th > .75) {
+            const co = Math.cos(f.th), si = Math.sin(f.th);
+            f.parts = f.grp.map(q => { const ux = q.rx * f.s, X = ux * co + q.ry * si, Y = -ux * si + q.ry * co; return { cx: f.px + f.s * X, cy: f.py + Y, w: q.w, ang: f.s * f.th, vx: f.s * f.om * Y, vy: -f.om * X, om: f.s * f.om, col: q.col }; });
+            f.free = true;
+          }
+        } else {
+          f.parts.forEach(p => {
+            p.vy -= G * dt; p.cx += p.vx * dt; p.cy += p.vy * dt; p.ang += p.om * dt;
+            const hh = Math.abs(Math.sin(p.ang)) * p.w / 2 + Math.abs(Math.cos(p.ang)) * h / 2;
+            if (p.cy < hh) { p.cy = hh; p.vy = p.vy < -1 ? p.vy * -.25 : 0; p.vx *= .85; p.om *= .85; }
+          });
+          f.n += dt; if (f.n > 110 && st === 'fall') finish();
+        }
+      }
+      x.clearRect(0, 0, W, H); x.globalAlpha = .25; x.fillStyle = ink; x.fillRect(0, sy(0), W, H); x.globalAlpha = 1;
+      const A = Math.max(0, 16 - margin()) * .45 * Math.sin(T * .12);
+      bl.forEach(b => { x.save(); rect(b.cx + A * b.lv / Math.max(1, bl.length), sy((b.lv + .5) * h), b.w, b.col); x.restore(); });
+      if (st === 'hover') {
+        const hy = bl.length * h + 170; x.globalAlpha = .35; x.strokeStyle = ink; x.setLineDash([4, 6]); x.beginPath(); x.moveTo(hx, sy(hy - h / 2)); x.lineTo(hx, sy(bl.length * h)); x.stroke(); x.setLineDash([]); x.globalAlpha = 1;
+        rect(hx, sy(hy), cur.w, C[t]);
+      }
+      if (drop) rect(drop.cx, sy(drop.y), drop.w, C[t]);
+      if (fall) {
+        if (fall.free) fall.parts.forEach(p => box(p.cx, p.cy, p.w, p.ang, p.col));
+        else { x.save(); x.translate(fall.px, sy(fall.py)); x.rotate(fall.s * fall.th); fall.grp.forEach(q => rect(q.rx, -q.ry, q.w, q.col)); x.restore(); }
+      }
+      x.font = 'bold 17px system-ui'; x.fillStyle = C[t]; x.fillText(names[t], 12, 26); x.fillStyle = ink; x.textAlign = 'right'; x.fillText('Hauteur : ' + bl.length, W - 12, 26); x.textAlign = 'left';
+      if (st === 'pause') { x.font = 'bold 22px system-ui'; x.textAlign = 'center'; x.fillStyle = C[loser]; x.fillText(names[loser] + ' fait tomber la tour !', W / 2, H / 2 - 40); x.textAlign = 'left'; }
       raf = requestAnimationFrame(loop);
     };
-    cleanup = () => cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+    cleanup = () => { cancelAnimationFrame(raf); clearTimeout(tm); }; newBlock(); raf = requestAnimationFrame(loop);
   } },
   { n: 'Ballon', p: 4, run(el, end) {
     const z = split(el), alive = z.map((_, i) => i); let t = alive[Math.random() * alive.length | 0], cnt = 0, pm = 0, busy = false, tm; let lim = 5 + (Math.random() * 14 | 0);
