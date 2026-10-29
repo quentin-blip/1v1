@@ -1,0 +1,25 @@
+// Logos des jeux : nom du jeu → [couleur, dessin SVG, catégorie (v = vitesse, r = réflexion)]
+// Pour un nouveau jeu : ajoute une ligne ici avec EXACTEMENT le même nom que dans app.js
+window.LOGOS = {
+  'Réflexe': ['#f5b301', '<path d="M27 4 10 27h11l-3 17 20-26H27z" fill="currentColor"/>', 'v'],
+  'Tir à la corde': ['#ff7043', '<path d="M10 24h28M24 14v20"/><circle cx="8" cy="24" r="4" fill="currentColor"/><circle cx="40" cy="24" r="4" fill="currentColor"/>', 'v'],
+  'Calcul rapide': ['#26a69a', '<path d="M12 8v12M6 14h12M30 9l12 10M42 9 30 19M8 34h12M30 34h12M8 42h12M30 42h12"/>', 'v'],
+  'Morpion': ['#ec407a', '<path d="M18 6v36M30 6v36M6 18h36M6 30h36"/>', 'r'],
+  'Mémoire': ['#7e57c2', '<rect x="5" y="12" width="20" height="28" rx="4"/><rect x="23" y="8" width="20" height="28" rx="4" fill="currentColor" fill-opacity=".35"/>', 'r'],
+  'Pong': ['#29b6f6', '<rect x="12" y="6" width="22" height="6" rx="3" fill="currentColor"/><rect x="14" y="36" width="22" height="6" rx="3" fill="currentColor"/><circle cx="28" cy="24" r="4" fill="currentColor"/>', 'v'],
+  'Puissance 4': ['#ef5350', '<rect x="6" y="8" width="36" height="32" rx="6"/><circle cx="17" cy="19" r="4" fill="currentColor"/><circle cx="31" cy="19" r="4"/><circle cx="17" cy="31" r="4"/><circle cx="31" cy="31" r="4" fill="currentColor"/>', 'r'],
+  'Cibles': ['#8bc34a', '<circle cx="24" cy="24" r="18"/><circle cx="24" cy="24" r="10"/><circle cx="24" cy="24" r="2.5" fill="currentColor"/>', 'v'],
+  'Chifoumi': ['#ffa726', '<circle cx="14" cy="36" r="5"/><circle cx="34" cy="36" r="5"/><path d="M17 32 34 8M31 32 14 8"/>', 'r'],
+  'Chrono': ['#42a5f5', '<circle cx="24" cy="27" r="15"/><path d="M24 27V17M19 6h10M24 6v6"/>', 'v'],
+  'Allumettes': ['#ff8a65', '<path d="M12 16v26M24 16v26M36 16v26"/><circle cx="12" cy="11" r="3.5" fill="currentColor"/><circle cx="24" cy="11" r="3.5" fill="currentColor"/><circle cx="36" cy="11" r="3.5" fill="currentColor"/>', 'r'],
+  'Simon': ['#5c6bc0', '<rect x="6" y="6" width="16" height="16" rx="4" fill="currentColor"/><rect x="26" y="6" width="16" height="16" rx="4"/><rect x="6" y="26" width="16" height="16" rx="4"/><rect x="26" y="26" width="16" height="16" rx="4" fill="currentColor"/>', 'r'],
+  'Cochon': ['#26c6da', '<rect x="7" y="7" width="34" height="34" rx="9"/><circle cx="17" cy="17" r="2.6" fill="currentColor"/><circle cx="31" cy="17" r="2.6" fill="currentColor"/><circle cx="24" cy="24" r="2.6" fill="currentColor"/><circle cx="17" cy="31" r="2.6" fill="currentColor"/><circle cx="31" cy="31" r="2.6" fill="currentColor"/>', 'r'],
+  'Couleurs': ['#ab47bc', '<path d="M24 6C14 6 6 14 6 24s8 18 18 18c3 0 4-2 3-4s0-5 4-5h5c4 0 6-3 6-6 0-11-8-21-18-21z"/><circle cx="15" cy="24" r="2.6" fill="currentColor"/><circle cx="22" cy="14" r="2.6" fill="currentColor"/><circle cx="33" cy="15" r="2.6" fill="currentColor"/>', 'v'],
+  'Ordre': ['#9e9d24', '<path d="M12 12h12l12 12"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/><circle cx="24" cy="12" r="3.2" fill="currentColor"/><circle cx="36" cy="24" r="3.2" fill="currentColor"/><circle cx="12" cy="36" r="3.2"/><circle cx="24" cy="36" r="3.2"/><circle cx="36" cy="36" r="3.2"/>', 'v'],
+  'Nuances': ['#8d6e63', '<path d="M4 24s8-14 20-14 20 14 20 14-8 14-20 14S4 24 4 24z"/><circle cx="24" cy="24" r="6" fill="currentColor"/>', 'v'],
+  'Bombe': ['#e53935', '<circle cx="22" cy="28" r="14" fill="currentColor"/><path d="M31 15l6-6M37 4v6M33 8h8"/>', 'v'],
+  '_app': ['#7c4dff', '<rect x="4" y="14" width="40" height="22" rx="11"/><path d="M14 25h8M18 21v8"/><circle cx="31" cy="23" r="1.8" fill="currentColor"/><circle cx="36" cy="28" r="1.8" fill="currentColor"/>'],
+  '_lock': ['#ffffff', '<rect x="10" y="22" width="28" height="20" rx="5"/><path d="M16 22v-6a8 8 0 0 1 16 0v6"/>'],
+  '_trophy': ['#f5b301', '<path d="M14 8h20v12a10 10 0 0 1-20 0zM14 12H7c0 7 3 10 7 10M34 12h7c0 7-3 10-7 10M24 30v8M16 42h16"/>'],
+  '_back': ['#ffffff', '<path d="M30 10 16 24l14 14"/>']
+};
