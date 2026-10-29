@@ -1,28 +1,14 @@
-const V = 'party-games-v7'; // à incrémenter si tu changes la liste des fichiers ci-dessous
-const FILES = ['./', 'index.html', 'style.css', 'icons.js', 'config.js', 'app.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
-
-self.addEventListener('install', e => {
-  // addAll échoue franchement si un fichier manque : mieux qu'un cache incomplet qui casse le hors-ligne en silence
-  e.waitUntil(caches.open(V).then(c => c.addAll(FILES)));
-  self.skipWaiting();
-});
-
+const V = 'party-games-v11';
+const F = ['./', 'index.html', 'style.css', 'icons.js', 'rules.js', 'config.js', 'app.js', 'manifest.json', 'icon-192.png', 'icon-512.png'];
+self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => Promise.all(F.map(f => c.add(f).catch(() => {}))))); self.skipWaiting(); });
 self.addEventListener('activate', e => e.waitUntil(
-  caches.keys().then(keys => Promise.all(keys.filter(k => k !== V).map(k => caches.delete(k)))).then(() => clients.claim())
+  caches.keys().then(k => Promise.all(k.filter(x => x !== V).map(x => caches.delete(x)))).then(() => clients.claim())
 ));
-
-// Réponse immédiate depuis le cache + mise à jour en arrière-plan : tes nouveaux fichiers arrivent à l'ouverture suivante.
+// Réseau d'abord (mises à jour immédiates), cache en secours (hors ligne)
 self.addEventListener('fetch', e => {
-  const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return; // Supabase passe toujours par le réseau
-  e.respondWith((async () => {
-    const cache = await caches.open(V);
-    const cached = await cache.match(req, { ignoreSearch: true });
-    const network = fetch(req).then(res => { if (res.ok) cache.put(req, res.clone()); return res; }).catch(() => null);
-    if (cached) { e.waitUntil(network); return cached; }
-    const res = await network;
-    if (res) return res;
-    if (req.mode === 'navigate') return (await cache.match('index.html')) || Response.error();
-    return Response.error();
-  })());
+  if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
+  e.respondWith(fetch(e.request).then(r => {
+    if (r.ok) { const c = r.clone(); caches.open(V).then(ch => ch.put(e.request, c)); }
+    return r;
+  }).catch(() => caches.match(e.request)));
 });

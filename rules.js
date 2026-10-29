@@ -1,0 +1,26 @@
+// Règles affichées avant chaque jeu (clé = nom exact du jeu)
+window.RULES = {
+  'Réflexe': 'Attends que l’écran devienne vert, puis tape en premier. Taper trop tôt t’élimine. Le temps de réaction du gagnant est affiché.',
+  'Tir à la corde': 'Tape le plus vite possible dans ta zone pour repousser la frontière. Celui qui réduit la zone adverse à presque rien gagne.',
+  'Calcul rapide': 'Le même calcul s’affiche pour les deux joueurs. Touche la bonne réponse en premier. Une erreur donne le point à l’adversaire. Premier à 6.',
+  'Morpion': 'À tour de rôle, alignez 3 symboles en ligne, en colonne ou en diagonale. Le premier à jouer est tiré au sort.',
+  'Mémoire': 'Retourne deux cartes par tour. Si les icônes sont identiques, tu les gardes et tu rejoues. Celui qui trouve le plus de paires gagne.',
+  'Pong': 'Glisse ton doigt dans ta moitié d’écran pour déplacer ta raquette. La balle part après 3 secondes, dans le sens de la flèche. Premier à 3 points.',
+  'Puissance 4': 'À tour de rôle, fais tomber un jeton dans une colonne. Aligne-en 4 en ligne, en colonne ou en diagonale.',
+  'Cibles': 'Ta cible bouge toute seule et rétrécit à chaque touche. Touche-la le plus vite possible. Premier à 10.',
+  'Chifoumi': 'Chacun choisit Pierre, Feuille ou Ciseaux. Pierre bat Ciseaux, Ciseaux bat Feuille, Feuille bat Pierre.',
+  'Chrono': 'Un temps à atteindre est annoncé (différent à chaque manche). Le chrono défile puis disparaît. Touche ton écran pour t’arrêter au plus près : ton choix est verrouillé, et les temps sont révélés quand tout le monde a joué.',
+  'Allumettes': 'À tour de rôle, prends 1, 2 ou 3 allumettes sur 15. Celui qui prend la dernière perd.',
+  'Simon': 'Répète la suite de couleurs dans l’ordre, puis ajoutes-en une. Celui qui se trompe perd.',
+  'Cochon': 'À tour de rôle, lance le dé pour cumuler des points, puis garde-les. Un 1 te fait tout perdre. Premier à 50.',
+  'Couleurs': 'Touche la couleur de l’encre, pas celle que le mot indique. Une erreur donne le point à l’adversaire. Premier à 7.',
+  'Ordre': 'Touche les chiffres de 1 à 12 dans l’ordre. Une erreur te bloque 1 seconde. Le premier à finir gagne.',
+  'Nuances': 'Touche la case dont la teinte est légèrement différente. Premier à 5. Une erreur donne le point à l’adversaire.',
+  'Bombe': 'Touche ton écran pour passer la bombe. Elle bat de plus en plus vite. Celui qui la tient quand elle explose est éliminé. Le dernier en jeu gagne.',
+  'Sprint': 'Tape le plus vite possible dans ta zone. Le premier à 40 touches gagne.',
+  'Taupes': 'Touche la taupe quand elle apparaît dans ta zone. Le premier à 10 gagne.',
+  'Parcours': 'Tout le monde court sur le même parcours. Glisse ton doigt sur ta barre de couleur pour déplacer ton bonhomme et passe dans les trous des murs. Le dernier en vie gagne.',
+  'Ballon': 'À ton tour, pompe le ballon (3 fois maximum) puis passe. Personne ne sait quand il éclate : celui qui le fait éclater est éliminé. Le dernier en jeu gagne.',
+  'Feu rouge': 'Tape quand l’écran est vert, ne touche pas quand il est rouge, et n’anticipe pas. Une faute fait perdre un point. Premier à 5.',
+  'Tournoi': 'Enchaîne 5 jeux tirés au hasard. Chaque manche gagnée rapporte 1 point. Celui qui a le plus de points gagne le tournoi.'
+};
