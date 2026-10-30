@@ -227,3 +227,17 @@ html[data-theme=creme] .tcard button{background:#F2B8A0;border:0}
 /* Tour */
 .big{width:min(100%,360px);height:64px;font-size:1.15rem;font-weight:700;border-radius:16px;border:0}
 .big:disabled{opacity:.5}
+
+/* Barre du bas toujours visible sur l'accueil */
+#app.menu footer{position:sticky;bottom:0;z-index:5;margin:0 -12px;padding:14px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,#1a103300,#1a1033 30%)}
+html[data-theme=creme] #app.menu footer{background:linear-gradient(to bottom,#FBF5EA00,#FBF5EA 30%)}
+#app.menu .grid{padding-bottom:6px}
+#app.menu footer{flex-wrap:nowrap;gap:6px}
+#app.menu footer button{flex:1;justify-content:center;padding:10px 4px;font-size:.82rem;opacity:1;background:#ffffff14}
+html[data-theme=creme] #app.menu footer button{background:#fff;border:1px solid #EFE4D2}
+
+#app.menu footer button{min-width:0;white-space:nowrap}
+
+/* Icônes de la barre et du titre : taille explicite (évite l'écrasement) */
+.lg.sm svg{width:21px;height:21px}
+.brand .lg svg{width:26px;height:26px}

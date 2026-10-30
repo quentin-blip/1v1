@@ -19,6 +19,8 @@ const api = async (path, opts = {}) => {
 };
 const saveMatch = (game, w) => api('matches', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ game, winner: names[w], loser: NP === 2 ? names[1 - w] : 'Les autres' }) });
 const sb = () => names.slice(0, NP).map((n, i) => `<b style="color:${C[i]}">${n} ${score[i]}</b>`).join(' · ');
+// Canvas net sur écrans haute densité : taille logique W×H, résolution multipliée par le ratio de l'écran
+const crisp = (c, W, H) => { const r = Math.min(3, window.devicePixelRatio || 1), x = c.getContext('2d'); c.width = W * r; c.height = H * r; x.scale(r, r); return x; };
 const split = (el, n = NP) => {
   let host = el;
   if (n > 2) { host = document.createElement('div'); host.className = 'zg'; el.append(host); }
@@ -61,9 +63,9 @@ const jingle = win => (win ? [523, 659, 784, 1047] : [330, 262]).forEach((f, i) 
 
 const ACH = {
   first: ['Première victoire', 'Gagne une partie'], ten: ['10 victoires', 'Cumule 10 victoires'],
-  mix: ['Touche-à-tout', 'Gagne 5 jeux différents'], marathon: ['Marathonien', 'Gagne une partie en mode Marathon'],
+  mix: ['Touche-à-tout', 'Gagne 5 jeux différents'], marathon: ['Marathonien', 'Gagne une partie en « Premier à 3 »'],
   gang: ['Chef de bande', 'Gagne une partie à 4 joueurs'], streak: ['En feu', 'Gagne 3 parties d’affilée'],
-  clean: ['Sans faute', 'Gagne un Duel ou un Marathon sans perdre de manche'], tour: ['Champion', 'Gagne un tournoi']
+  clean: ['Sans faute', 'Gagne en plusieurs manches sans en perdre une'], tour: ['Champion', 'Gagne un tournoi']
 };
 let ST = {}; try { ST = JSON.parse(localStorage.getItem('pg-stats')) || {}; } catch {}
 const me = n => ST[n] ||= { w: 0, s: 0, g: [], a: [] };
@@ -72,7 +74,7 @@ function record(game, win, st) {
   names.slice(0, NP).forEach((n, i) => {
     const p = me(n); if (i !== win) { p.s = 0; return; }
     p.w++; p.s++; if (!p.g.includes(game)) p.g.push(game);
-    const ok = { first: 1, ten: p.w >= 10, mix: p.g.length >= 5, marathon: mode === 2, gang: NP === 4, streak: p.s >= 3, tour: game === 'Tournoi', clean: mode > 0 && st.w.every((v, k) => k === i || v === 0) };
+    const nd = NEED[game] ?? MODES[mode][1], ok = { first: 1, ten: p.w >= 10, mix: p.g.length >= 5, marathon: nd === 3, gang: NP === 4, streak: p.s >= 3, tour: game === 'Tournoi', clean: nd > 1 && st.w.every((v, k) => k === i || v === 0) };
     Object.keys(ok).forEach(k => {
       if (!ok[k] || p.a.includes(k)) return; p.a.push(k); out.push(k);
       api('achievements?on_conflict=player,key', { method: 'POST', headers: { Prefer: 'resolution=ignore-duplicates,return=minimal' }, body: JSON.stringify({ player: n, key: k }) });
@@ -108,7 +110,6 @@ const logo = (n, s = '') => { const [c, d] = LOGOS[n]; return `<span class="lg $
 const MODES = [['Rapide', 1, 'Une seule manche'], ['Duel', 2, 'Premier à 2 manches'], ['Marathon', 3, 'Premier à 3 manches']];
 const TABS = ['Tous', 'Vitesse', 'Réflexion'], CATS = [null, 'v', 'r'];
 let mode = 0, tab = 0;
-try { mode = Math.min(2, +localStorage.getItem('pg-mode') || 0); } catch {}
 
 function menu() {
   stop(); app.className = 'menu';
@@ -120,14 +121,11 @@ function menu() {
     <div class="sc">${sb()}</div>
     <div class="names">${Array.from({ length: NP }, (_, i) => `<input data-n="${i}" maxlength="12" value="${names[i]}" style="border-color:${C[i]}" aria-label="Nom du joueur ${i + 1}">`).join('')}</div>
     <div class="seg">${[2, 3, 4].map(n => `<button data-p="${n}" class="${n === NP ? 'sel' : ''}">${n} joueurs</button>`).join('')}</div>
-    <div class="seg">${MODES.map((m, i) => `<button data-m="${i}" class="${i === mode ? 'sel' : ''}">${m[0]}</button>`).join('')}</div>
-    <small class="cap">${MODES[mode][2]}</small>
     <div class="seg">${TABS.map((t, i) => `<button data-t="${i}" class="${i === tab ? 'sel' : ''}">${t}</button>`).join('')}</div>
   </header>
   <main class="grid">${rest.map(card).join('')}${tab || NP > 2 ? '' : soon()}${tour.map(card).join('')}</main>
   <footer><button id="lb">${logo('_trophy', 'ic')} Classement</button><button id="tr">${logo('_trophy', 'ic')} Trophées</button><button id="rs">Scores à 0</button></footer>`;
   app.querySelectorAll('.gc').forEach(b => b.onclick = () => play(games[b.dataset.i]));
-  app.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { mode = +b.dataset.m; try { localStorage.setItem('pg-mode', mode); } catch {} menu(); });
   app.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { tab = +b.dataset.t; menu(); });
   app.querySelectorAll('.names input').forEach(inp => inp.oninput = () => {
     names[inp.dataset.n] = clean(inp.value) || 'Joueur ' + (+inp.dataset.n + 1);
@@ -251,7 +249,7 @@ const games = [
   } },
   { n: 'Pong', run(el, end) {
     const c = document.createElement('canvas'); el.append(c);
-    const W = c.width = 360, H = c.height = 600, x = c.getContext('2d'), pw = 70, p = [W / 2, W / 2], s = [0, 0]; let b, raf;
+    const W = 360, H = 600, x = crisp(c, W, H), pw = 70, p = [W / 2, W / 2], s = [0, 0]; let b, raf;
     const rs = d => b = { x: W / 2, y: H / 2, vx: 2.6 * (Math.random() < .5 ? 1 : -1), vy: d * 3.5, at: performance.now() + 3000 }; rs(Math.random() < .5 ? 1 : -1);
     c.onpointerdown = c.onpointermove = e => { const r = c.getBoundingClientRect(); p[(e.clientY - r.top) / r.height < .5 ? 0 : 1] = (e.clientX - r.left) / r.width * W; };
     const loop = () => {
@@ -460,8 +458,8 @@ const games = [
   } },
   { n: 'Tour', p: 4, m: 1, run(el, end) {
     const W = 360, H = 520, h = 26, G = .25, c = document.createElement('canvas'), btn = document.createElement('button');
-    c.width = W; c.height = H; c.className = 'course'; btn.className = 'big'; el.append(c, btn);
-    const x = c.getContext('2d'), ink = getComputedStyle(document.body).color, alive = names.slice(0, NP).map((_, i) => i);
+    c.className = 'course'; btn.className = 'big'; el.append(c, btn);
+    const x = crisp(c, W, H), ink = getComputedStyle(document.body).color, alive = names.slice(0, NP).map((_, i) => i);
     let bl = [], t = alive[Math.random() * alive.length | 0], cur, fall = null, drop = null, st = 'hover', cam = 0, hx = W / 2, hd = 1, T = 0, loser = -1, tm, raf, last = performance.now();
     const sy = y => H - 40 - y + cam;
     const newBlock = () => { cur = { w: 56 + (Math.random() * 54 | 0) }; st = 'hover'; btn.disabled = false; btn.textContent = names[t] + ' : lâcher !'; btn.style.background = C[t]; btn.style.color = '#111'; };
@@ -532,7 +530,7 @@ const games = [
         else { x.save(); x.translate(fall.px, sy(fall.py)); x.rotate(fall.s * fall.th); fall.grp.forEach(q => rect(q.rx, -q.ry, q.w, q.col)); x.restore(); }
       }
       x.font = 'bold 17px system-ui'; x.fillStyle = C[t]; x.fillText(names[t], 12, 26); x.fillStyle = ink; x.textAlign = 'right'; x.fillText('Hauteur : ' + bl.length, W - 12, 26); x.textAlign = 'left';
-      if (st === 'pause') { x.font = 'bold 22px system-ui'; x.textAlign = 'center'; x.fillStyle = C[loser]; x.fillText(names[loser] + ' fait tomber la tour !', W / 2, H / 2 - 40); x.textAlign = 'left'; }
+      if (st === 'pause') { x.font = 'bold 22px system-ui'; x.textAlign = 'center'; x.fillStyle = C[loser]; x.fillText(names[loser] + ' fait tomber la tour !', W / 2, H / 2 - 40, W - 40); x.textAlign = 'left'; }
       raf = requestAnimationFrame(loop);
     };
     cleanup = () => { cancelAnimationFrame(raf); clearTimeout(tm); }; newBlock(); raf = requestAnimationFrame(loop);
