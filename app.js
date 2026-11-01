@@ -677,34 +677,55 @@ const games = [
     cleanup = () => { cancelAnimationFrame(raf); clearTimeout(tm); }; raf = requestAnimationFrame(loop);
   } },
   { n: 'Fléchettes', p: 4, m: 1, run(el, end) {
-    const W = 360, H = 520, TX = W / 2, TY = 230, c = document.createElement('canvas'), btn = document.createElement('button'); c.className = 'course'; btn.className = 'big'; el.append(c, btn);
+    const W = 360, H = 520, TX = W / 2, TY = 190, SX = W / 2, SY = H - 60, c = document.createElement('canvas'); c.className = 'course'; el.append(c);
     const x = crisp(c, W, H), s0 = Math.random() * NP | 0, order = [], darts = [], tot = names.slice(0, NP).map(() => 0);
     for (let k = 0; k < 3; k++) for (let i = 0; i < NP; i++) order.push((i + s0) % NP);
     const RINGS = [[12, 50], [38, 10], [66, 8], [94, 6], [122, 4], [150, 2]];
-    let idx = 0, T = 0, fly = null, over = false, note = '', noteT = 0, raf, tm, last = performance.now();
-    const sp = () => 1 + Math.floor(idx / NP) * .35;
-    const cross = () => ({ x: TX + Math.sin(T * .043 * sp()) * 130 + Math.sin(T * .11) * 18, y: TY + Math.sin(T * .031 * sp() + 1) * 120 + Math.cos(T * .09) * 14 });
-    const label = () => { if (idx < order.length) { btn.textContent = names[order[idx]] + ' : lancer !'; btn.style.background = C[order[idx]]; btn.style.color = '#111'; } };
-    btn.onclick = () => { if (fly || over || idx >= order.length) return; const q = cross(); fly = { x: q.x + (Math.random() - .5) * 12, y: q.y + (Math.random() - .5) * 12, t: 0, p: order[idx] }; btn.disabled = true; beep(500, .05, 'triangle', .1); };
+    let idx = 0, fly = null, over = false, hold = null, smp = [], note = '', noteT = 0, raf, tm, last = performance.now();
+    const pt = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H]; };
+    c.onpointerdown = e => { if (fly || over || idx >= order.length) return; c.setPointerCapture(e.pointerId); hold = pt(e); smp = [{ t: e.timeStamp, x: hold[0], y: hold[1] }]; };
+    c.onpointermove = e => { if (!hold) return; hold = pt(e); smp.push({ t: e.timeStamp, x: hold[0], y: hold[1] }); if (smp.length > 40) smp.shift(); };
+    c.onpointerup = e => {
+      if (!hold) return; const p = hold; hold = null; const s = smp.filter(q => e.timeStamp - q.t <= 110); smp = [];
+      const a = s[0], b = s[s.length - 1];
+      if (!a || s.length < 2 || b.t - a.t < 8) { note = 'Lance d’un geste rapide !'; noteT = 70; return; }
+      const dt = b.t - a.t, vx = (b.x - a.x) / dt, vy = (b.y - a.y) / dt;
+      if (Math.hypot(vx, vy) < .25 || vy > -.1) { note = 'Lance vers la cible !'; noteT = 70; return; }
+      fly = { sx: p[0], sy: p[1], x: p[0] + vx * 170 + (Math.random() - .5) * 8, y: p[1] + vy * 170 + (Math.random() - .5) * 8, t: 0, p: order[idx], ang: Math.atan2(vy, vx) };
+      beep(500, .05, 'triangle', .1); buzz(10);
+    };
+    const dart = (xc, yc, ang, sc, col) => {
+      x.save(); x.translate(xc, yc); x.rotate(ang + Math.PI / 2); x.scale(sc, sc);
+      x.fillStyle = '#c9ced3'; x.fillRect(-2, -26, 4, 30); x.beginPath(); x.moveTo(0, -38); x.lineTo(-2.5, -26); x.lineTo(2.5, -26); x.fill();
+      x.fillStyle = col; x.beginPath(); x.moveTo(0, 4); x.lineTo(-10, 18); x.lineTo(0, 12); x.lineTo(10, 18); x.fill(); x.restore();
+    };
     const land = () => {
       const d = Math.hypot(fly.x - TX, fly.y - TY), r = RINGS.find(q => d <= q[0]), pts = r ? r[1] : 0;
-      darts.push({ x: fly.x, y: fly.y, p: fly.p }); tot[fly.p] += pts; note = pts ? '+' + pts : 'Raté'; noteT = 70; beep(pts >= 50 ? 880 : 220, .1, 'square', .12); buzz(pts >= 50 ? [30, 30, 60] : 15); fly = null; idx++;
+      if (fly.y > TY + 170) { note = 'Trop court !'; } else if (fly.y < 30) { note = 'Trop fort !'; } else note = pts ? '+' + pts : 'Raté';
+      noteT = 80; if (fly.x > 10 && fly.x < W - 10 && fly.y > 44 && fly.y < TY + 170) darts.push({ x: fly.x, y: fly.y, p: fly.p });
+      tot[fly.p] += pts; beep(pts >= 50 ? 880 : 220, .1, 'square', .12); buzz(pts >= 50 ? [30, 30, 60] : 15); fly = null; idx++;
       if (idx >= order.length) { over = true; const m = Math.max(...tot); tm = setTimeout(() => end(tot.filter(v => v === m).length > 1 ? -1 : tot.indexOf(m), 'Totaux : ' + tot.map((v, i) => `${names[i]} ${v}`).join(' · ')), 1700); }
-      else { btn.disabled = false; label(); }
     };
     const loop = now => {
-      const dt = Math.min(2.5, (now - last) / 16.67); last = now; T += dt; if (fly) { fly.t += dt; if (fly.t >= 14) land(); }
+      const dt = Math.min(2.5, (now - last) / 16.67); last = now; if (fly) { fly.t += dt / 24; if (fly.t >= 1) land(); }
       x.clearRect(0, 0, W, H); x.fillStyle = '#16122b'; x.fillRect(0, 0, W, H);
       for (let i = RINGS.length - 1; i >= 0; i--) { x.beginPath(); x.arc(TX, TY, RINGS[i][0], 0, 7); x.fillStyle = i === 0 ? '#e53935' : i % 2 ? '#2b2b3a' : '#e8e2d0'; x.fill(); x.strokeStyle = '#0006'; x.lineWidth = 1; x.stroke(); }
-      darts.forEach(d => { x.beginPath(); x.arc(d.x, d.y, 6, 0, 7); x.fillStyle = C[d.p]; x.fill(); x.strokeStyle = '#fff'; x.lineWidth = 2; x.stroke(); });
-      if (fly) { const k = 1 + (1 - fly.t / 14) * 2.2; x.globalAlpha = .4 + .6 * fly.t / 14; x.beginPath(); x.arc(fly.x, fly.y, 6 * k, 0, 7); x.fillStyle = C[fly.p]; x.fill(); x.globalAlpha = 1; }
-      else if (!over) { const q = cross(), p = order[idx]; x.strokeStyle = '#fff'; x.lineWidth = 5; x.beginPath(); x.arc(q.x, q.y, 14, 0, 7); x.moveTo(q.x - 24, q.y); x.lineTo(q.x + 24, q.y); x.moveTo(q.x, q.y - 24); x.lineTo(q.x, q.y + 24); x.stroke(); x.strokeStyle = C[p]; x.lineWidth = 2.5; x.stroke(); }
+      x.strokeStyle = '#ffffff33'; x.lineWidth = 2; x.setLineDash([8, 8]); x.beginPath(); x.moveTo(0, TY + 175); x.lineTo(W, TY + 175); x.stroke(); x.setLineDash([]);
+      darts.forEach(d => { x.beginPath(); x.arc(d.x, d.y, 5, 0, 7); x.fillStyle = C[d.p]; x.fill(); x.strokeStyle = '#fff'; x.lineWidth = 2; x.stroke(); x.beginPath(); x.moveTo(d.x - 9, d.y); x.lineTo(d.x + 9, d.y); x.moveTo(d.x, d.y - 9); x.lineTo(d.x, d.y + 9); x.strokeStyle = C[d.p]; x.lineWidth = 1.5; x.stroke(); });
+      const p = idx < order.length ? order[idx] : 0;
+      if (fly) { const t = fly.t, e = 1 - (1 - t) * (1 - t); dart(fly.sx + (fly.x - fly.sx) * e, fly.sy + (fly.y - fly.sy) * e - Math.sin(Math.PI * t) * 26, fly.ang, 1.5 - .85 * e, C[fly.p]); }
+      else if (!over) {
+        if (hold) { const a = smp.length > 3 ? smp[smp.length - 4] : null, ang = a ? Math.atan2(hold[1] - a.y, hold[0] - a.x) : -Math.PI / 2; if (smp.length > 1) { x.strokeStyle = C[p]; x.globalAlpha = .35; x.lineWidth = 4; x.lineCap = 'round'; x.beginPath(); x.moveTo(smp[0].x, smp[0].y); smp.forEach(q => x.lineTo(q.x, q.y)); x.stroke(); x.globalAlpha = 1; } dart(hold[0], hold[1], a && Math.hypot(hold[0] - a.x, hold[1] - a.y) > 6 ? ang : -Math.PI / 2, 1.5, C[p]); }
+        else dart(SX, SY + Math.sin(now / 300) * 3, -Math.PI / 2, 1.5, C[p]);
+      }
+      x.textAlign = 'center'; x.font = '14px system-ui'; x.fillStyle = '#ffffffcc';
+      if (!over && !fly && !hold) x.fillText(idx < 1 ? 'Fais glisser la fléchette vers la cible d’un geste rapide, puis lâche' : names[p] + ' : à toi de lancer !', W / 2, H - 14);
+      if (noteT > 0) { noteT -= dt; x.font = (note.length > 9 ? 'bold 22px' : 'bold 34px') + ' system-ui'; x.globalAlpha = Math.min(1, noteT / 25); x.fillStyle = '#ffd23f'; x.fillText(note, W / 2, TY + 215, W - 30); x.globalAlpha = 1; }
       x.fillStyle = '#0008'; x.fillRect(0, 0, W, 34); x.font = 'bold 14px system-ui'; x.textAlign = 'left';
-      let px = 8; tot.forEach((v, i) => { x.fillStyle = C[i]; const t = `${names[i]} ${v}`; x.fillText(t, px, 22); px += x.measureText(t).width + 12; });
-      if (noteT > 0) { noteT -= dt; x.textAlign = 'center'; x.font = 'bold 34px system-ui'; x.globalAlpha = Math.min(1, noteT / 25); x.fillStyle = '#ffd23f'; x.fillText(note, W / 2, H - 70); x.globalAlpha = 1; }
+      let px = 8; tot.forEach((v, i) => { x.fillStyle = C[i]; const t = `${i === p && !over ? '▶ ' : ''}${names[i]} ${v}`; x.fillText(t, px, 22); px += x.measureText(t).width + 12; });
       raf = requestAnimationFrame(loop);
     };
-    cleanup = () => { cancelAnimationFrame(raf); clearTimeout(tm); }; label(); raf = requestAnimationFrame(loop);
+    cleanup = () => { cancelAnimationFrame(raf); clearTimeout(tm); }; raf = requestAnimationFrame(loop);
   } },
   { n: 'Estimation', p: 4, m: 1, run(el, end) {
     const z = split(el), N = 14 + (Math.random() * 30 | 0), val = z.map(() => 20), done = z.map(() => false); let t1, t2;

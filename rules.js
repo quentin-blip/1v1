@@ -24,7 +24,7 @@ window.RULES = {
   'Feu rouge': 'Tape quand l’écran est vert, ne touche pas quand il est rouge, et n’anticipe pas. Une faute fait perdre un point. Premier à 5.',
   'Cercle parfait': 'Dessine un cercle avec ton doigt dans ta zone, en un seul trait. Le tracé se verrouille quand tu lèves le doigt. Les scores de rondeur sont révélés quand tout le monde a fini : le plus rond gagne.',
   'Curling': 'Chacun lance 2 pierres : glisse vers le bas depuis la pierre puis relâche. Plus tu tires loin, plus elle part fort, et le cercle indique où elle devrait s’arrêter. Pendant qu’elle glisse, tape vite sur l’écran pour la balayer et la faire aller plus loin. Une pierre qui s’arrête avant la ligne ou qui dépasse le fond est retirée. La pierre la plus proche du centre fait gagner son joueur.',
-  'Fléchettes': 'Un viseur se promène sur la cible. À ton tour, appuie au bon moment pour lancer ta fléchette : plus c’est près du centre, plus tu marques (le centre vaut 50). 3 fléchettes chacun, le viseur accélère à chaque tour. Le plus gros total gagne.',
+  'Fléchettes': 'Pose le doigt sur la fléchette et lance-la d’un geste rapide vers la cible, puis lâche. Plus ton geste est rapide, plus elle va loin : trop mou, elle tombe devant la cible, trop fort, elle passe au-dessus. Le centre vaut 50 points. 3 fléchettes chacun, le plus gros total gagne.',
   'Estimation': 'Des points s’affichent quelques instants. Estime combien il y en avait avec les boutons puis valide. Le plus proche gagne.',
   'Tournoi': 'Enchaîne 5 jeux tirés au hasard. Chaque manche gagnée rapporte 1 point. Celui qui a le plus de points gagne le tournoi.'
 };
