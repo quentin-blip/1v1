@@ -249,3 +249,21 @@ html[data-theme=creme] .dc{background:#efe4d2;border:0}
 .dots2{position:relative;width:min(64vw,200px);height:min(36vw,130px)}
 .zg .dots2{width:min(40vw,150px);height:70px}
 .dots2 i{position:absolute;width:8px;height:8px;border-radius:50%;background:currentColor}
+
+/* Métronome */
+.z.beat{filter:brightness(1.9)}
+
+/* Alerte fichiers pas à jour */
+.warn{background:#e5393555;border:1px solid #e53935;border-radius:12px;padding:8px 10px;font-size:.8rem;margin:6px 0;text-align:center}
+#ov .card small{opacity:.7}
+
+/* Sumo face à face, Métronome, Trésor */
+.arena{width:min(100%,calc((100dvh - 330px)*.9));aspect-ratio:360/400}
+.pads.rot{transform:rotate(180deg)}
+.z.tap{filter:brightness(1.55)}
+.tgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;width:min(92vw,330px)}
+.tgrid button{aspect-ratio:1;padding:0;border-radius:10px;display:grid;place-items:center}
+.tgrid u{width:10px;height:10px;border-radius:50%;border:2px solid #fff;display:block;text-decoration:none}
+.tgrid .gold{animation:pop .5s cubic-bezier(.2,.9,.3,1.5);box-shadow:0 0 0 3px #fff,0 0 22px #ffd23f}
+.leg{display:flex;align-items:center;gap:8px;font-size:.8rem;opacity:.85}
+.leg i{display:block;width:160px;height:10px;border-radius:6px;background:linear-gradient(90deg,#3949ab,#42a5f5,#66bb6a,#fdd835,#fb8c00,#e53935)}

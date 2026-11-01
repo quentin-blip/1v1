@@ -1,3 +1,4 @@
+const VERSION = 21;
 const $ = s => document.querySelector(s), app = $('#app');
 const C = ['#ff4d8d', '#35d0ff', '#ffd23f', '#5dff9b'], score = [0, 0, 0, 0];
 let cleanup = () => {}, runId = 0;
@@ -98,7 +99,7 @@ function settings() {
   const draw = () => {
     o.innerHTML = `<div class="card"><h3>Réglages</h3><small>Thème</small><div class="seg">${Object.keys(THEMES).map(k => `<button data-th="${k}" class="${k === theme ? 'sel' : ''}">${THEMES[k][0]}</button>`).join('')}</div>
     <div class="seg"><button data-s="snd" class="${S.snd ? 'sel' : ''}">Sons et vibrations : ${S.snd ? 'oui' : 'non'}</button></div>
-    <div class="seg"><button data-s="rules" class="${S.rules ? 'sel' : ''}">Règles avant le jeu : ${S.rules ? 'oui' : 'non'}</button></div><button id="cl">Fermer</button></div>`;
+    <div class="seg"><button data-s="rules" class="${S.rules ? 'sel' : ''}">Règles avant le jeu : ${S.rules ? 'oui' : 'non'}</button></div><button id="cl">Fermer</button><small>Version ${VERSION}</small></div>`;
     o.querySelectorAll('[data-th]').forEach(b => b.onclick = () => { applyTheme(b.dataset.th); draw(); });
     o.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { S[b.dataset.s] = !S[b.dataset.s]; try { localStorage.setItem('pg-set', JSON.stringify(S)); } catch {} draw(); });
     o.querySelector('#cl').onclick = () => { o.remove(); menu(); };
@@ -106,17 +107,19 @@ function settings() {
   draw(); app.append(o);
 }
 
-const logo = (n, s = '') => { const [c, d] = LOGOS[n]; return `<span class="lg ${s}" style="--c:${c}"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${d}</svg></span>`; };
+const stale = [['icons.js', window.V_ICONS], ['rules.js', window.V_RULES]].filter(([, v]) => v !== VERSION).map(([f]) => f);
+const logo = (n, s = '') => { const [c, d] = LOGOS[n] || ['#7c4dff', '<circle cx="24" cy="24" r="14"/>']; return `<span class="lg ${s}" style="--c:${c}"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${d}</svg></span>`; };
 const MODES = [['Rapide', 1, 'Une seule manche'], ['Duel', 2, 'Premier à 2 manches'], ['Marathon', 3, 'Premier à 3 manches']];
 const TABS = ['Tous', 'Vitesse', 'Réflexion'], CATS = [null, 'v', 'r'];
 let mode = 0, tab = 0;
 
 function menu() {
   stop(); app.className = 'menu';
-  const list = games.filter(g => (g.p || 2) >= NP && (g.lo || 2) <= NP && (!CATS[tab] || g.tourn || LOGOS[g.n][2] === CATS[tab]));
+  const list = games.filter(g => (g.p || 2) >= NP && (g.lo || 2) <= NP && (!CATS[tab] || g.tourn || (LOGOS[g.n] || [])[2] === CATS[tab]));
   const rest = list.filter(g => !g.tourn), tour = list.filter(g => g.tourn);
-  const card = (g, k) => `<button class="gc${g.tourn ? ' tour' : ''}" data-i="${games.indexOf(g)}" style="--i:${k};--c:${LOGOS[g.n][0]}">${logo(g.n)}<b>${g.n}</b>${g.p > 2 && !g.tourn ? '<small class="pl">2–4</small>' : ''}</button>`;
+  const card = (g, k) => `<button class="gc${g.tourn ? ' tour' : ''}" data-i="${games.indexOf(g)}" style="--i:${k};--c:${(LOGOS[g.n] || ['#7c4dff'])[0]}">${logo(g.n)}<b>${g.n}</b>${g.p > 2 && !g.tourn ? '<small class="pl">2–4</small>' : ''}</button>`;
   app.innerHTML = `<header>
+    ${stale.length ? `<div class="warn">Fichier pas à jour : ${stale.join(', ')}. Remplace-le sur GitHub puis recharge l’appli.</div>` : ''}
     <div class="brand">${logo('_app')}<h1>Party Games</h1><button class="gear" id="gs" aria-label="Réglages">${logo('_gear', 'ic')}</button></div>
     <div class="sc">${sb()}</div>
     <div class="names">${Array.from({ length: NP }, (_, i) => `<input data-n="${i}" maxlength="12" value="${names[i]}" style="border-color:${C[i]}" aria-label="Nom du joueur ${i + 1}">`).join('')}</div>
@@ -744,11 +747,11 @@ const games = [
     cleanup = () => { clearTimeout(t1); clearTimeout(t2); };
   } },
   { n: 'Sumo', p: 4, run(el, end) {
-    const W = 360, H = 520, CX = W / 2, CY = 235, R0 = 150, RD = 22, c = document.createElement('canvas'), pads = document.createElement('div');
-    c.className = 'course'; pads.className = 'pads'; el.append(c, pads);
+    const W = 360, H = 400, CX = W / 2, CY = 200, R0 = 150, RD = 22, c = document.createElement('canvas'), top = document.createElement('div'), bot = document.createElement('div');
+    c.className = 'arena'; top.className = 'pads rot'; bot.className = 'pads'; el.append(top, c, bot);
     const x = crisp(c, W, H);
     const ds = names.slice(0, NP).map((_, i) => { const a = i / NP * Math.PI * 2 + Math.PI / 4; return { x: CX + Math.cos(a) * 85, y: CY + Math.sin(a) * 85, vx: 0, vy: 0, aim: a + Math.PI, dir: Math.random() < .5 ? 1 : -1, out: 0, cd: 0, p: i }; });
-    const pd = ds.map(d => { const p = document.createElement('div'); p.className = 'pad'; p.style.borderColor = C[d.p]; p.style.background = C[d.p] + '33'; p.textContent = names[d.p]; pads.append(p); p.onpointerdown = () => {
+    const pd = ds.map(d => { const p = document.createElement('div'); p.className = 'pad'; p.style.borderColor = C[d.p]; p.style.background = C[d.p] + '33'; p.textContent = names[d.p]; (d.p % 2 ? top : bot).append(p); p.onpointerdown = () => {
       if (d.out || d.cd > 0 || over) return; d.vx += Math.cos(d.aim) * 9; d.vy += Math.sin(d.aim) * 9; d.cd = 70; d.dir *= -1; beep(260, .06, 'triangle', .12); buzz(10); }; return p; });
     let T = 0, R = R0, over = false, raf, tm, last = performance.now();
     const loop = now => {
@@ -779,14 +782,14 @@ const games = [
         x.restore();
       });
       pd.forEach((p, i) => { p.style.opacity = ds[i].out ? .25 : ds[i].cd > 0 ? .5 : 1; });
-      x.font = '14px system-ui'; x.textAlign = 'center'; x.fillStyle = '#ffffffaa'; if (T < 240) x.fillText('Appuie sur ta barre pour te propulser dans le sens de la flèche', W / 2, H - 12);
+      x.font = '14px system-ui'; x.textAlign = 'center'; x.fillStyle = '#ffffffaa'; if (T < 240) x.fillText('Appuie sur ton bouton pour foncer dans le sens de la flèche', W / 2, H - 12, W - 24);
       raf = requestAnimationFrame(loop);
     };
     cleanup = () => { cancelAnimationFrame(raf); clearTimeout(tm); }; raf = requestAnimationFrame(loop);
   } },
   { n: 'Métronome', p: 4, m: 1, run(el, end) {
     const z = split(el), P = 450 + (Math.random() * 350 | 0), GUIDE = 4, BEATS = 8, taps = z.map(() => []), ids = []; let phase = 'wait', t0 = 0;
-    z.forEach((x, i) => { x.innerHTML = '<small>Écoute le rythme…</small><h1>♪</h1><b></b>'; x.onpointerdown = e => { if (phase === 'play') taps[i].push(e.timeStamp); }; });
+    z.forEach((x, i) => { x.innerHTML = '<small>Écoute le rythme…</small><h1>♪</h1><b></b>'; x.onpointerdown = e => { e.stopPropagation(); beep(420 + i * 130, .07, 'triangle', .3); buzz(12); x.classList.add('tap'); setTimeout(() => x.classList.remove('tap'), 90); if (phase === 'play') taps[i].push(e.timeStamp); }; });
     const at = (ms, f) => ids.push(setTimeout(f, Math.max(0, ms - performance.now())));
     const pulse = () => z.forEach(x => { x.classList.add('beat'); setTimeout(() => x.classList.remove('beat'), 130); });
     t0 = performance.now() + 1500;
@@ -802,6 +805,22 @@ const games = [
       const m = Math.min(...err); at(performance.now() + 2600, () => end(err.filter(v => Math.round(v) === Math.round(m)).length > 1 ? -1 : err.indexOf(m), `Un temps = ${P} ms`));
     });
     cleanup = () => ids.forEach(clearTimeout);
+  } },
+  { n: 'Trésor', p: 4, m: 1, run(el, end) {
+    const CW = 7, RH = 9, N = CW * RH, tr = Math.random() * N | 0; let t = Math.random() * NP | 0, lock = false, tm;
+    el.innerHTML = '<p id="st"></p><div class="tgrid"></div><div class="leg"><span>froid</span><i></i><span>brûlant</span></div>';
+    const g = el.querySelector('.tgrid'), st = el.querySelector('#st');
+    const label = () => st.innerHTML = `<b style="color:${C[t]}">${names[t]}</b>, creuse une case`;
+    const col = d => d === 0 ? '#ffd23f' : d <= 1.5 ? '#e53935' : d <= 2.5 ? '#fb8c00' : d <= 3.5 ? '#fdd835' : d <= 5 ? '#66bb6a' : d <= 7 ? '#42a5f5' : '#3949ab';
+    const dig = (i, b) => {
+      if (lock || b.disabled) return; b.disabled = true;
+      const d = Math.hypot(i % CW - tr % CW, (i / CW | 0) - (tr / CW | 0));
+      b.style.background = col(d); b.innerHTML = `<u style="background:${C[t]}"></u>`; beep(300 + (7 - Math.min(d, 7)) * 90, .1, 'triangle', .14); buzz(10);
+      if (i === tr) { lock = true; b.classList.add('gold'); st.innerHTML = `<b style="color:${C[t]}">${names[t]}</b> trouve le trésor !`; tm = setTimeout(() => end(t, 'Trésor trouvé !'), 1500); return; }
+      t = (t + 1) % NP; label();
+    };
+    for (let i = 0; i < N; i++) { const b = document.createElement('button'); b.onclick = () => dig(i, b); g.append(b); }
+    cleanup = () => clearTimeout(tm); label();
   } },
   { n: 'Tournoi', p: 4, tourn: true, run(el, end) {
     const pool = games.filter(g => !g.tourn && (g.p || 2) >= NP && (g.lo || 2) <= NP).sort(() => Math.random() - .5).slice(0, 5), pts = names.slice(0, NP).map(() => 0); let r = 0;
@@ -827,4 +846,5 @@ document.addEventListener('pointerdown', e => { const n = Date.now(); if (n - la
 document.addEventListener('contextmenu', e => e.preventDefault());
 applyTheme(theme);
 menu();
+window.__ok = 1;
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');

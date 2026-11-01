@@ -1,4 +1,5 @@
 // Règles affichées avant chaque jeu (clé = nom exact du jeu)
+window.V_RULES = 21;
 window.RULES = {
   'Réflexe': 'Attends que l’écran devienne vert, puis tape en premier. Taper trop tôt t’élimine. Le temps de réaction du gagnant est affiché.',
   'Tir à la corde': 'Tape le plus vite possible dans ta zone pour repousser la frontière. Celui qui réduit la zone adverse à presque rien gagne.',
@@ -26,7 +27,8 @@ window.RULES = {
   'Curling': 'Chacun lance 2 pierres : glisse vers le bas depuis la pierre puis relâche. Plus tu tires loin, plus elle part fort, et le cercle indique où elle devrait s’arrêter. Pendant qu’elle glisse, tape vite sur l’écran pour la balayer et la faire aller plus loin. Une pierre qui s’arrête avant la ligne ou qui dépasse le fond est retirée. La pierre la plus proche du centre fait gagner son joueur.',
   'Fléchettes': 'Pose le doigt sur la fléchette et lance-la d’un geste rapide vers la cible, puis lâche. Plus ton geste est rapide, plus elle va loin : trop mou, elle tombe devant la cible, trop fort, elle passe au-dessus. Le centre vaut 50 points. 3 fléchettes chacun, le plus gros total gagne.',
   'Estimation': 'Des points s’affichent quelques instants. Estime combien il y en avait avec les boutons puis valide. Le plus proche gagne.',
-  'Sumo': 'Chacun pilote un disque sur la plateforme. Une flèche tourne autour de ton disque : appuie sur ta barre de couleur pour te propulser dans le sens de la flèche (courte recharge entre deux poussées). Pousse les autres hors de la plateforme, qui rétrécit avec le temps. Le dernier sur la plateforme gagne.',
-  'Métronome': 'Écoute 4 temps, puis garde le rythme tout seul en tapant sur ton écran à chaque temps, pendant 8 temps. Ne tape pas plus de 8 fois. Le plus régulier gagne : l’écart moyen de chacun est révélé à la fin.',
+  'Sumo': 'Chaque joueur a un bouton de couleur de son côté de l’écran. Une flèche tourne autour de ton disque : appuie sur ton bouton pour te propulser dans le sens de la flèche (courte recharge entre deux poussées). Pousse les autres hors de la plateforme, qui rétrécit avec le temps. Le dernier sur la plateforme gagne.',
+  'Métronome': 'Écoute 4 temps, puis garde le rythme tout seul en tapant sur ton écran à chaque temps, pendant 8 temps (chaque tape fait un petit son). Ne tape pas plus de 8 fois. Le plus régulier gagne : l’écart moyen de chacun est révélé à la fin.',
+  'Trésor': 'Un trésor est caché dans la grille. À tour de rôle, creusez une case : sa couleur indique la distance au trésor (rouge brûlant = tout près, bleu foncé = très loin). Déduisez où il se cache : celui qui le trouve gagne.',
   'Tournoi': 'Enchaîne 5 jeux tirés au hasard. Chaque manche gagnée rapporte 1 point. Celui qui a le plus de points gagne le tournoi.'
 };
