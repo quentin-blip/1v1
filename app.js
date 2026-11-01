@@ -113,7 +113,7 @@ let mode = 0, tab = 0;
 
 function menu() {
   stop(); app.className = 'menu';
-  const list = games.filter(g => (g.p || 2) >= NP && (!CATS[tab] || g.tourn || LOGOS[g.n][2] === CATS[tab]));
+  const list = games.filter(g => (g.p || 2) >= NP && (g.lo || 2) <= NP && (!CATS[tab] || g.tourn || LOGOS[g.n][2] === CATS[tab]));
   const rest = list.filter(g => !g.tourn), tour = list.filter(g => g.tourn);
   const card = (g, k) => `<button class="gc${g.tourn ? ' tour' : ''}" data-i="${games.indexOf(g)}" style="--i:${k};--c:${LOGOS[g.n][0]}">${logo(g.n)}<b>${g.n}</b>${g.p > 2 && !g.tourn ? '<small class="pl">2–4</small>' : ''}</button>`;
   app.innerHTML = `<header>
@@ -573,8 +573,137 @@ const games = [
     z.forEach((x, i) => { x.innerHTML = '<small></small><h1></h1>'; x.onpointerdown = () => tap(i); });
     cleanup = () => clearTimeout(tm); round();
   } },
+  { n: 'Cercle parfait', p: 4, m: 1, run(el, end) {
+    const z = split(el), sc = z.map(() => null), pts = z.map(() => []);
+    const score = p => {
+      const n = p.length; if (n < 20) return 0;
+      const cx = p.reduce((s, q) => s + q[0], 0) / n, cy = p.reduce((s, q) => s + q[1], 0) / n, r = p.map(q => Math.hypot(q[0] - cx, q[1] - cy)), m = r.reduce((s, v) => s + v, 0) / n;
+      if (m < 30) return 0;
+      const sd = Math.sqrt(r.reduce((s, v) => s + (v - m) ** 2, 0) / n), gap = Math.hypot(p[0][0] - p[n - 1][0], p[0][1] - p[n - 1][1]) / m;
+      const cov = new Set(p.map(q => Math.floor((Math.atan2(q[1] - cy, q[0] - cx) + Math.PI) / (2 * Math.PI) * 24))).size / 24;
+      return Math.max(0, 100 * (1 - sd / m * 3.2 - gap * .5)) * Math.min(1, cov * 1.1);
+    };
+    z.forEach((x, i) => {
+      x.innerHTML = '<small>Dessine un cercle parfait (un seul essai)</small><canvas class="dc"></canvas>';
+      const cv = x.querySelector('canvas'), g = crisp(cv, 300, 300), rot = x.classList.contains('z0') || x.classList.contains('zr'); let on = false;
+      const pos = e => { const r = cv.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * 300, py = (e.clientY - r.top) / r.height * 300; return rot ? [300 - px, 300 - py] : [px, py]; };
+      g.strokeStyle = C[i]; g.lineWidth = 6; g.lineCap = g.lineJoin = 'round';
+      cv.onpointerdown = e => { if (sc[i] !== null) return; cv.setPointerCapture(e.pointerId); on = true; pts[i] = [pos(e)]; g.beginPath(); g.moveTo(...pts[i][0]); };
+      cv.onpointermove = e => { if (!on) return; const p = pos(e); pts[i].push(p); g.lineTo(...p); g.stroke(); g.beginPath(); g.moveTo(...p); };
+      cv.onpointerup = () => {
+        if (!on) return; on = false; sc[i] = score(pts[i]); x.style.background = '#2ecc7155'; x.querySelector('small').textContent = 'Tracé verrouillé';
+        if (sc[i] === null || sc.some(v => v === null)) return;
+        z.forEach((q, j) => q.querySelector('small').textContent = Math.round(sc[j]) + ' %');
+        const m = Math.max(...sc), id = setTimeout(() => end(sc.filter(v => Math.round(v) === Math.round(m)).length > 1 ? -1 : sc.indexOf(m), 'Le plus rond gagne'), 2300); cleanup = () => clearTimeout(id);
+      };
+    });
+  } },
+  { n: 'Curling', p: 4, run(el, end) {
+    const W = 360, H = 520, R = 14, TX = W / 2, TY = 130, SX = W / 2, SY = H - 50, c = document.createElement('canvas'); c.className = 'course'; el.append(c);
+    const x = crisp(c, W, H), ink = getComputedStyle(document.body).color, s0 = Math.random() * NP | 0, order = [], sts = [];
+    for (let k = 0; k < 2; k++) for (let i = 0; i < NP; i++) order.push((i + s0) % NP);
+    let idx = 0, aim = null, moving = false, over = false, raf, tm, last = performance.now();
+    const pt = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H]; };
+    c.onpointerdown = e => { if (moving || over) return; c.setPointerCapture(e.pointerId); aim = pt(e); };
+    c.onpointermove = e => { if (aim) aim = pt(e); };
+    c.onpointerup = () => {
+      if (!aim) return; const dx = SX - aim[0], dy = SY - aim[1], L = Math.hypot(dx, dy); aim = null; if (L < 14) return;
+      const k = Math.min(L * .1, 16) / L; sts.push({ x: SX, y: SY, vx: dx * k, vy: dy * k, p: order[idx++] }); moving = true; beep(180, .08, 'triangle', .15);
+    };
+    const loop = now => {
+      const dt = Math.min(2.5, (now - last) / 16.67); last = now; let mv = false;
+      sts.forEach(s => {
+        if (s.gone) { s.vx = s.vy = 0; return; }
+        s.x += s.vx * dt; s.y += s.vy * dt; const f = Math.pow(.97, dt); s.vx *= f; s.vy *= f;
+        if (Math.hypot(s.vx, s.vy) < .12) s.vx = s.vy = 0; else mv = true;
+        if (s.x < R) { s.x = R; s.vx *= -.7; } if (s.x > W - R) { s.x = W - R; s.vx *= -.7; } if (s.y > H - R) { s.y = H - R; s.vy *= -.7; } if (s.y < -R) s.gone = true;
+      });
+      for (let i = 0; i < sts.length; i++) for (let j = i + 1; j < sts.length; j++) {
+        const a = sts[i], b = sts[j]; if (a.gone || b.gone) continue;
+        const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+        if (d < 2 * R && d > 0) {
+          const nx = dx / d, ny = dy / d, ov = (2 * R - d) / 2; a.x -= nx * ov; a.y -= ny * ov; b.x += nx * ov; b.y += ny * ov;
+          const rel = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
+          if (rel > 0) { a.vx -= rel * nx; a.vy -= rel * ny; b.vx += rel * nx; b.vy += rel * ny; beep(300, .04, 'square', .08); }
+          mv = true;
+        }
+      }
+      if (moving && !mv) {
+        moving = false;
+        if (idx >= order.length) {
+          over = true; const best = sts.filter(s => !s.gone).sort((a, b) => Math.hypot(a.x - TX, a.y - TY) - Math.hypot(b.x - TX, b.y - TY))[0];
+          tm = setTimeout(() => end(best ? best.p : -1, best ? 'Pierre la plus proche du centre' : 'Aucune pierre en jeu'), 1200);
+        }
+      }
+      x.clearRect(0, 0, W, H); x.lineWidth = 3;
+      [78, 50, 22].forEach((r, i) => { x.beginPath(); x.arc(TX, TY, r, 0, 7); x.fillStyle = ink; x.globalAlpha = .08 + i * .06; x.fill(); x.globalAlpha = .4; x.strokeStyle = ink; x.stroke(); }); x.globalAlpha = 1;
+      sts.forEach(s => { if (s.gone) return; x.beginPath(); x.arc(s.x, s.y, R, 0, 7); x.fillStyle = C[s.p]; x.fill(); x.strokeStyle = ink; x.globalAlpha = .6; x.lineWidth = 2; x.stroke(); x.globalAlpha = 1; });
+      const run = !moving && !over && idx < order.length;
+      if (run) {
+        const p = order[idx]; x.beginPath(); x.arc(SX, SY, R, 0, 7); x.fillStyle = C[p]; x.fill();
+        if (aim) { const dx = SX - aim[0], dy = SY - aim[1], L = Math.hypot(dx, dy) || 1, k = Math.min(L, 160) * 2.2 / L; x.strokeStyle = C[p]; x.lineWidth = 3; x.setLineDash([6, 6]); x.beginPath(); x.moveTo(SX, SY); x.lineTo(SX + dx * k, SY + dy * k); x.stroke(); x.setLineDash([]); }
+        else if (idx === 0) { x.font = '14px system-ui'; x.fillStyle = ink; x.globalAlpha = .6; x.textAlign = 'center'; x.fillText('Glisse vers le bas puis relâche pour lancer', W / 2, H - 14); x.textAlign = 'left'; x.globalAlpha = 1; }
+      }
+      x.font = 'bold 17px system-ui'; x.fillStyle = idx < order.length ? C[order[idx]] : ink; x.fillText(idx < order.length ? names[order[idx]] + ' · pierre ' + (idx + 1) + '/' + order.length : 'Résultat…', 12, 26);
+      raf = requestAnimationFrame(loop);
+    };
+    cleanup = () => { cancelAnimationFrame(raf); clearTimeout(tm); }; raf = requestAnimationFrame(loop);
+  } },
+  { n: 'Mines', p: 4, run(el, end) {
+    const S = 7, MN = 8, alive = names.slice(0, NP).map((_, i) => i); let t = alive[Math.random() * alive.length | 0], cells, first, left, lock = false, tm;
+    el.innerHTML = '<p id="st"></p><div class="mnf"></div>';
+    const g = el.querySelector('.mnf'), st = el.querySelector('#st');
+    const label = msg => st.innerHTML = msg || `<b style="color:${C[t]}">${names[t]}</b>, révèle une case<br><small>${MN} mines cachées. Les chiffres comptent les mines voisines.</small>`;
+    const nb = i => { const r = i / S | 0, c = i % S, o = []; for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { const rr = r + a, cc = c + b; if ((a || b) && rr >= 0 && rr < S && cc >= 0 && cc < S) o.push(rr * S + cc); } return o; };
+    const reset = () => { cells = Array.from({ length: S * S }, () => ({ m: false, o: false, n: 0 })); first = true; left = S * S - MN; g.innerHTML = ''; cells.forEach((_, i) => { const b = document.createElement('button'); b.onclick = () => pick(i); g.append(b); }); label(); };
+    const reveal = i => { const c = cells[i]; if (c.o) return; c.o = true; left--; const b = g.children[i]; b.disabled = true; b.className = 'op'; if (c.n) { b.textContent = c.n; b.dataset.n = c.n; } else nb(i).forEach(reveal); };
+    const pick = i => {
+      if (lock || cells[i].o) return;
+      if (first) {
+        const ex = new Set([i, ...nb(i)]); [...cells.keys()].filter(k => !ex.has(k)).sort(() => Math.random() - .5).slice(0, MN).forEach(k => cells[k].m = true);
+        cells.forEach((c, k) => c.n = nb(k).filter(q => cells[q].m).length); first = false;
+      }
+      if (cells[i].m) {
+        lock = true; cells.forEach((c, k) => { if (c.m) g.children[k].className = 'bomb'; }); beep(100, .4, 'sawtooth', .3); buzz(150);
+        label(`<b style="color:${C[t]}">${names[t]}</b> saute sur une mine !`); const k = alive.indexOf(t); alive.splice(k, 1);
+        tm = setTimeout(() => { if (alive.length === 1) return end(alive[0]); lock = false; t = alive[k % alive.length]; reset(); }, 1700); return;
+      }
+      reveal(i);
+      if (left <= 0) { reset(); return; }
+      t = alive[(alive.indexOf(t) + 1) % alive.length]; label();
+    };
+    cleanup = () => clearTimeout(tm); reset();
+  } },
+  { n: 'Estimation', p: 4, m: 1, run(el, end) {
+    const z = split(el), N = 14 + (Math.random() * 30 | 0), val = z.map(() => 20), done = z.map(() => false); let t1, t2;
+    const dots = Array.from({ length: N }, () => `<i style="left:${Math.random() * 94}%;top:${Math.random() * 88}%"></i>`).join('');
+    z.forEach(x => x.innerHTML = `<small>Combien de points ? Regarde bien !</small><div class="dots2">${dots}</div>`);
+    t1 = setTimeout(() => z.forEach((x, i) => {
+      x.innerHTML = `<small>Ton estimation</small><h1>${val[i]}</h1><div class="ch">${[-5, -1, 1, 5].map(d => `<button data-d="${d}">${d > 0 ? '+' + d : d}</button>`).join('')}</div><button class="ok">Valider</button>`;
+      x.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { if (done[i]) return; val[i] = Math.max(0, val[i] + +b.dataset.d); x.querySelector('h1').textContent = val[i]; });
+      x.querySelector('.ok').onclick = () => {
+        if (done[i]) return; done[i] = true; x.style.background = '#2ecc7155'; x.querySelector('small').textContent = 'Choix verrouillé';
+        if (done.some(v => !v)) return;
+        const d = val.map(v => Math.abs(v - N)), m = Math.min(...d); z.forEach((q, j) => q.querySelector('small').textContent = `Écart : ${d[j]}`);
+        t2 = setTimeout(() => end(d.filter(v => v === m).length > 1 ? -1 : d.indexOf(m), `Il y avait ${N} points`), 2500);
+      };
+    }), 1500 + N * 25);
+    cleanup = () => { clearTimeout(t1); clearTimeout(t2); };
+  } },
+  { n: 'Petit unique', lo: 3, p: 4, run(el, end) {
+    const z = split(el), pick = z.map(() => null);
+    const reveal = () => {
+      z.forEach((x, i) => x.innerHTML = `<h1>${pick[i]}</h1>`); const cnt = {}; pick.forEach(v => cnt[v] = (cnt[v] || 0) + 1);
+      const u = pick.filter(v => cnt[v] === 1), w = u.length ? pick.indexOf(Math.min(...u)) : -1;
+      const id = setTimeout(() => end(w, w < 0 ? 'Aucun nombre unique' : `Plus petit nombre unique : ${pick[w]}`), 2300); cleanup = () => clearTimeout(id);
+    };
+    z.forEach((x, i) => {
+      x.innerHTML = `<small>Choisis un nombre</small><div class="nm9">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => `<button data-k="${k}">${k}</button>`).join('')}</div>`;
+      x.querySelectorAll('button').forEach(b => b.onclick = () => { if (pick[i] !== null) return; pick[i] = +b.dataset.k; x.innerHTML = '<h2>Choix verrouillé</h2>'; x.style.background = '#2ecc7155'; if (pick.every(v => v !== null)) reveal(); });
+    });
+  } },
   { n: 'Tournoi', p: 4, tourn: true, run(el, end) {
-    const pool = games.filter(g => !g.tourn && (g.p || 2) >= NP).sort(() => Math.random() - .5).slice(0, 5), pts = names.slice(0, NP).map(() => 0); let r = 0;
+    const pool = games.filter(g => !g.tourn && (g.p || 2) >= NP && (g.lo || 2) <= NP).sort(() => Math.random() - .5).slice(0, 5), pts = names.slice(0, NP).map(() => 0); let r = 0;
     const board = () => pts.map((v, i) => `<b style="color:${C[i]}">${names[i]} ${v}</b>`).join(' · ');
     const reset = () => { cleanup(); cleanup = () => {}; };
     const intro = () => {
