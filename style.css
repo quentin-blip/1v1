@@ -242,21 +242,10 @@ html[data-theme=creme] #app.menu footer button{background:#fff;border:1px solid 
 .lg.sm svg{width:21px;height:21px}
 .brand .lg svg{width:26px;height:26px}
 
-/* Cercle, Mines, Estimation, Petit unique */
+/* Cercle, Estimation */
 .dc{width:min(70vw,230px);aspect-ratio:1;background:#0003;border-radius:16px;touch-action:none}
 .zg .dc{width:min(40vw,150px)}
 html[data-theme=creme] .dc{background:#efe4d2;border:0}
-.mnf{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;width:min(92vw,360px)}
-.mnf button{aspect-ratio:1;padding:0;font-weight:800;font-size:1.1rem;border-radius:10px}
-.mnf .op{background:#ffffff14;opacity:1}
-.mnf .bomb{background:#ef5350;position:relative}
-.mnf .bomb::after{content:"";position:absolute;inset:28%;border-radius:50%;background:#111}
-.mnf .op[data-n="1"]{color:#42a5f5}.mnf .op[data-n="2"]{color:#66bb6a}.mnf .op[data-n="3"]{color:#ef5350}.mnf .op[data-n="4"]{color:#ab47bc}.mnf .op[data-n="5"]{color:#ffa726}.mnf .op[data-n="6"]{color:#26c6da}
-html[data-theme=creme] .mnf .op{background:#efe4d2;border:0}
-html[data-theme=creme] .mnf .bomb{background:#ef5350;border:0}
 .dots2{position:relative;width:min(64vw,200px);height:min(36vw,130px)}
 .zg .dots2{width:min(40vw,150px);height:70px}
 .dots2 i{position:absolute;width:8px;height:8px;border-radius:50%;background:currentColor}
-.nm9{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:min(60vw,180px)}
-.zg .nm9{width:min(40vw,140px);gap:4px}
-.nm9 button{aspect-ratio:1;font-size:1.3rem;padding:0}

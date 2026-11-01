@@ -23,9 +23,8 @@ window.RULES = {
   'Ballon': 'À ton tour, pompe le ballon (3 fois maximum) puis passe. Personne ne sait quand il éclate : celui qui le fait éclater est éliminé. Le dernier en jeu gagne.',
   'Feu rouge': 'Tape quand l’écran est vert, ne touche pas quand il est rouge, et n’anticipe pas. Une faute fait perdre un point. Premier à 5.',
   'Cercle parfait': 'Dessine un cercle avec ton doigt dans ta zone, en un seul trait. Le tracé se verrouille quand tu lèves le doigt. Les scores de rondeur sont révélés quand tout le monde a fini : le plus rond gagne.',
-  'Curling': 'Chacun lance 2 pierres : glisse vers le bas pour te préparer, puis relâche. Plus tu tires loin, plus la pierre part fort. Les pierres se heurtent. La pierre la plus proche du centre de la cible fait gagner son joueur.',
-  'Mines': 'À tour de rôle, révèle une case de la grille. Un chiffre indique le nombre de mines voisines. Celui qui tombe sur une mine est éliminé. Le dernier en jeu gagne.',
+  'Curling': 'Chacun lance 2 pierres : glisse vers le bas depuis la pierre puis relâche. Plus tu tires loin, plus elle part fort, et le cercle indique où elle devrait s’arrêter. Pendant qu’elle glisse, tape vite sur l’écran pour la balayer et la faire aller plus loin. Une pierre qui s’arrête avant la ligne ou qui dépasse le fond est retirée. La pierre la plus proche du centre fait gagner son joueur.',
+  'Fléchettes': 'Un viseur se promène sur la cible. À ton tour, appuie au bon moment pour lancer ta fléchette : plus c’est près du centre, plus tu marques (le centre vaut 50). 3 fléchettes chacun, le viseur accélère à chaque tour. Le plus gros total gagne.',
   'Estimation': 'Des points s’affichent quelques instants. Estime combien il y en avait avec les boutons puis valide. Le plus proche gagne.',
-  'Petit unique': 'Jeu à 3 ou 4 joueurs. Chacun choisit en secret un nombre de 1 à 9. Celui qui a choisi le plus petit nombre que personne d’autre n’a choisi gagne.',
   'Tournoi': 'Enchaîne 5 jeux tirés au hasard. Chaque manche gagnée rapporte 1 point. Celui qui a le plus de points gagne le tournoi.'
 };
