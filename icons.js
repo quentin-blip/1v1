@@ -1,6 +1,6 @@
 // Logos des jeux : nom du jeu → [couleur, dessin SVG, catégorie (v = vitesse, r = réflexion)]
 // Pour un nouveau jeu : ajoute une ligne ici avec EXACTEMENT le même nom que dans app.js
-window.V_ICONS = 21;
+window.V_ICONS = 22;
 window.LOGOS = {
   'Réflexe': ['#f5b301', '<path d="M27 4 10 27h11l-3 17 20-26H27z" fill="currentColor"/>', 'v'],
   'Tir à la corde': ['#ff7043', '<path d="M10 24h28M24 14v20"/><circle cx="8" cy="24" r="4" fill="currentColor"/><circle cx="40" cy="24" r="4" fill="currentColor"/>', 'v'],
@@ -37,6 +37,7 @@ window.LOGOS = {
   'Petit unique': ['#8e24aa', '<path d="M18 14l6-5v30M16 39h16"/>', 'r'],
   'Quiz': ['#ffb300', '<path d="M17 18a7 7 0 1 1 10 6c-2 1.5-3 3-3 5"/><circle cx="24" cy="38" r="2.5" fill="currentColor"/>', 'r'],
   'Trésor': ['#ffa000', '<rect x="6" y="10" width="36" height="28" rx="4"/><path d="M17 19l14 12M31 19L17 31"/>', 'r'],
+  'Serpents': ['#00acc1', '<path d="M8 36c8-4 6-14 14-14s6 12 14 8"/><circle cx="38" cy="29" r="3.5" fill="currentColor"/>', 'v'],
   '_app': ['#7c4dff', '<rect x="4" y="14" width="40" height="22" rx="11"/><path d="M14 25h8M18 21v8"/><circle cx="31" cy="23" r="1.8" fill="currentColor"/><circle cx="36" cy="28" r="1.8" fill="currentColor"/>'],
   '_lock': ['#ffffff', '<rect x="10" y="22" width="28" height="20" rx="5"/><path d="M16 22v-6a8 8 0 0 1 16 0v6"/>'],
   '_trophy': ['#f5b301', '<path d="M14 8h20v12a10 10 0 0 1-20 0zM14 12H7c0 7 3 10 7 10M34 12h7c0 7-3 10-7 10M24 30v8M16 42h16"/>'],
